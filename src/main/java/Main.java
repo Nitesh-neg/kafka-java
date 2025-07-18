@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 
 public class Main {
   public static void main(String[] args){
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
     System.err.println("Logs from your program will appear here!");
 
     ServerSocket serverSocket = null;
@@ -21,10 +20,13 @@ public class Main {
       byte[] messageSize = inputStream.readNBytes(4);
       byte[] requestApiKey = inputStream.readNBytes(2);
       byte[] requestApiVersion = inputStream.readNBytes(2);
+      short  requestApiVersion_integer = ByteBuffer.wrap(requestApiVersion).getShort();
       byte[] requestCorrelationId = inputStream.readNBytes(4);
       byte[] response = ByteBuffer.allocate(4).put(requestCorrelationId).array();
       clientSocket.getOutputStream().write(messageSize);
       clientSocket.getOutputStream().write(response);
+      clientSocket.getOutputStream().write(new byte[]{0,35});
+      
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
