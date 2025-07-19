@@ -28,7 +28,7 @@ public class ClientManager {
                   // putInt(): writes integer into ByteBuffer
                   // array(): Extracts the underlying byte array from the ByteBuffer
                   OutputStream out = clientSocket.getOutputStream();
-                  byte[] messageSizeBytes = ByteBuffer.allocate(4).putInt(19).array();
+                  byte[] messageSizeBytes = ByteBuffer.allocate(4).putInt(26).array();
                   out.write(messageSizeBytes);
                   byte[] responseCorrelationIdBytes =
                           ByteBuffer.allocate(4).putInt(correlationId).array();
@@ -55,8 +55,28 @@ public class ClientManager {
                   // Note: if there are many API keys, then this pattern will repeat
                   // throttle_time_ms => 4 bytes
                   // buffer => 1 byte
-                  out.write(new byte[] {2, 00, 0x12, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0});
+                out.write(new byte[] {
+                            // === ApiVersions array ===
+                            3,                  // compact array length = 2 + 1 = 3
 
+                            // Entry 1: ApiKey 18 (ApiVersions)
+                            0x00, 0x12,         // ApiKey = 18
+                            0x00, 0x00,         // MinVersion = 0
+                            0x00, 0x04,         // MaxVersion = 4
+                            0x00,               // Tagged fields = 0
+
+                            // Entry 2: ApiKey 75 (DescribeTopicPartitions)
+                            0x00, 0x4B,         // ApiKey = 75
+                            0x00, 0x00,         // MinVersion = 0
+                            0x00, 0x00,         // MaxVersion = 0
+                            0x00,               // Tagged fields = 0
+
+                            // === ThrottleTimeMs ===
+                            0x00, 0x00, 0x00, 0x00,  // throttle_time_ms = 0
+
+                            // === Final Tagged Fields ===
+                            0x00                // Tagged fields = 0
+                        });
             }
 
         } catch (IOException e) {
